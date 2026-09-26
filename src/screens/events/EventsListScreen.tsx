@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
+  import React, {useCallback, useMemo, useState} from 'react';
 import {FlatList, Pressable, StyleSheet, Text, View} from 'react-native';
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
@@ -12,6 +12,7 @@ import {getEvents} from '../../api/events';
 import {colors, radius, shadows, spacing, typography} from '../../theme';
 import {Event} from '../../types/event';
 import {EventsStackParamList} from '../../types/navigation';
+import {useFocusEffect} from '@react-navigation/native';
 
 type Props = NativeStackScreenProps<EventsStackParamList, 'EventsList'>;
 
@@ -41,9 +42,11 @@ export function EventsListScreen({navigation}: Props) {
     }
   }, []);
 
-  useEffect(() => {
-    loadEvents();
-  }, [loadEvents]);
+  useFocusEffect(
+    useCallback(() => {
+      loadEvents();
+    }, [loadEvents]),
+  );
 
   const visibleEvents = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
