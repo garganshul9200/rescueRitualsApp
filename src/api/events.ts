@@ -61,22 +61,13 @@ function toBody(input: EventFormValues) {
   };
 }
 
-export async function getEvents(query?: string): Promise<Event[]> {
+export async function getEvents(): Promise<Event[]> {
   const {data} = await apiClient.get<ApiSuccessResponse<ApiEvent[]>>(
     eventRoutes.list,
   );
 
-  const q = query?.trim().toLowerCase();
   return (data.data ?? [])
     .map(mapEvent)
-    .filter(
-      event =>
-        !q ||
-        [event.title, event.description, event.location]
-          .join(' ')
-          .toLowerCase()
-          .includes(q),
-    )
     .sort((a, b) =>
       `${a.date}T${a.time}`.localeCompare(`${b.date}T${b.time}`),
     );

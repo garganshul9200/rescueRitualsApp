@@ -1,97 +1,110 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# Events App
 
-# Getting Started
+React Native client for browsing and managing events. It lists upcoming events, searches them locally, and creates, edits, and deletes events through the Events API.
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+## Features
 
-## Step 1: Start Metro
+- Upcoming events list, sorted by date and time, with pull to refresh
+- Search across title, description, and location
+- Event detail with date, time, location, description, and attendee count
+- Create and edit events in a modal form
+- Delete an event with confirmation
+- Local RSVP toggle on the detail screen (not sent to the API)
+- Loading, empty, and error states, including retry
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+## Tech stack
 
-To start the Metro dev server, run the following command from the root of your React Native project:
+- React Native 0.87 and React 19
+- TypeScript
+- React Navigation (native stack)
+- Axios
+- Node.js 22.11 or newer
+
+## Prerequisites
+
+Complete the [React Native environment setup](https://reactnative.dev/docs/set-up-your-environment) for your platform before running the app.
+
+## Getting started
+
+Install dependencies:
 
 ```sh
-# Using npm
-npm start
-
-# OR using Yarn
-yarn start
+npm install
 ```
 
-## Step 2: Build and run your app
+Start Metro:
 
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
+```sh
+npm start
+```
+
+In a second terminal, run the app.
 
 ### Android
 
 ```sh
-# Using npm
 npm run android
-
-# OR using Yarn
-yarn android
 ```
 
 ### iOS
 
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
-
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
+Install CocoaPods the first time you clone the repo, and again after native dependency changes:
 
 ```sh
 bundle install
-```
-
-Then, and every time you update your native dependencies, run:
-
-```sh
 bundle exec pod install
 ```
 
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
+Then:
 
 ```sh
-# Using npm
 npm run ios
-
-# OR using Yarn
-yarn ios
 ```
 
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
+The app talks to a hosted API. No local backend is required. The base URL is set in `src/api/config.ts`.
 
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
+## Scripts
 
-## Step 3: Modify your app
+| Command | Description |
+| --- | --- |
+| `npm start` | Start the Metro bundler |
+| `npm run android` | Build and run on Android |
+| `npm run ios` | Build and run on iOS |
+| `npm run build_android` | Assemble an Android release APK |
+| `npm run lint` | Run ESLint |
+| `npm test` | Run Jest |
 
-Now that you have successfully run the app, let's make changes!
+## API
 
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
+Requests go to `https://events-backend-985226427488.asia-south1.run.app/api`.
 
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
+| Method | Path | Use |
+| --- | --- | --- |
+| `GET` | `/events` | List events |
+| `GET` | `/events/:id` | Event detail |
+| `POST` | `/events` | Create an event |
+| `PUT` | `/events/:id` | Update an event |
+| `DELETE` | `/events/:id` | Delete an event |
 
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
+Create and update send `title`, `description`, `date` (`YYYY-MM-DD`), `time` (`hh:mm AM/PM`), and `location`. The client stores time as `HH:mm` and converts it at the API boundary. Search filters the list response on the device; it is not a query parameter.
 
-## Congratulations! :tada:
+Form rules: title 3–80 characters, description 10–500, location 3–120, and date and time are required.
 
-You've successfully run and modified your React Native App. :partying_face:
+## Project structure
 
-### Now what?
+```
+App.tsx                      App shell and navigation container
+src/api/                     Axios client, routes, and event requests
+src/components/              Shared UI (cards, form, states, header)
+src/navigation/              Events stack
+src/screens/events/          List, detail, and form screens
+src/theme/                   Colors, spacing, and typography
+src/types/                   Event and navigation types
+src/utils/                   Form validation
+```
 
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
+## Screens
 
-# Troubleshooting
-
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
-
-# Learn More
-
-To learn more about React Native, take a look at the following resources:
-
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+1. **Events list** — default screen. Tap a card for details, or the + button to create an event.
+2. **Event detail** — view, RSVP locally, edit, or delete.
+3. **Event form** — modal for creating an event, or editing one when opened with an `eventId`.

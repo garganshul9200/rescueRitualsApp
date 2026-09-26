@@ -1,6 +1,5 @@
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {FlatList, Pressable, StyleSheet, Text, View} from 'react-native';
-import {useFocusEffect} from '@react-navigation/native';
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {getApiErrorMessage} from '../../api/errors';
@@ -24,7 +23,7 @@ export function EventsListScreen({navigation}: Props) {
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
-  const loadEvents = useCallback(async (query: string, isRefresh = false) => {
+  const loadEvents = useCallback(async (isRefresh = false) => {
     if (isRefresh) {
       setRefreshing(true);
     } else {
@@ -33,7 +32,7 @@ export function EventsListScreen({navigation}: Props) {
     setError(null);
 
     try {
-      setEvents(await getEvents(query));
+      setEvents(await getEvents());
     } catch (err) {
       setError(getApiErrorMessage(err, 'Unable to load events.'));
     } finally {
@@ -43,27 +42,35 @@ export function EventsListScreen({navigation}: Props) {
   }, []);
 
   useEffect(() => {
-    loadEvents(searchQuery);
-  }, [searchQuery, loadEvents]);
+    loadEvents();
+  }, [loadEvents]);
 
-  useFocusEffect(
-    useCallback(() => {
-      loadEvents(searchQuery, true);
-    }, [loadEvents, searchQuery]),
-  );
+  const visibleEvents = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) {
+      return events;
+    }
+
+    return events.filter(event =>
+      [event.title, event.description, event.location]
+        .join(' ')
+        .toLowerCase()
+        .includes(q),
+    );
+  }, [events, searchQuery]);
 
   if (loading && !refreshing) {
     return <LoadingState message="Loading events…" />;
   }
 
   if (error && events.length === 0) {
-    return <ErrorState message={error} onRetry={() => loadEvents(searchQuery)} />;
+    return <ErrorState message={error} onRetry={() => loadEvents()} />;
   }
 
   const countLabel = searchQuery
-    ? events.length === 0
+    ? visibleEvents.length === 0
       ? 'No results'
-      : `${events.length} found`
+      : `${visibleEvents.length} found`
     : events.length === 0
       ? 'Nothing planned yet'
       : `${events.length} upcoming`;
@@ -71,7 +78,7 @@ export function EventsListScreen({navigation}: Props) {
   return (
     <View style={styles.container}>
       <FlatList
-        data={events}
+        data={visibleEvents}
         keyExtractor={(item: Event) => item.id}
         renderItem={({item}) => (
           <EventCard
@@ -80,7 +87,7 @@ export function EventsListScreen({navigation}: Props) {
           />
         )}
         refreshing={refreshing}
-        onRefresh={() => loadEvents(searchQuery, true)}
+        onRefresh={() => loadEvents(true)}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
         contentContainerStyle={[
@@ -89,7 +96,7 @@ export function EventsListScreen({navigation}: Props) {
             paddingTop: insets.top,
             paddingBottom: insets.bottom + 40,
           },
-          events.length === 0 && styles.emptyList,
+          visibleEvents.length === 0 && styles.emptyList,
         ]}
         ListHeaderComponent={
           <View>
