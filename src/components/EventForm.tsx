@@ -7,11 +7,11 @@ import {
   Text,
   View,
 } from 'react-native';
-import {EventFormErrors, EventFormValues} from '../types/event';
-import {colors, spacing, typography} from '../theme';
-import {Button} from './Button';
-import {DateTimeField} from './DateTimeField';
-import {TextField} from './TextField';
+import { EventFormErrors, EventFormValues } from '../types/event';
+import { colors, spacing, typography } from '../theme';
+import { Button } from './Button';
+import { DateTimeField } from './DateTimeField';
+import { TextField } from './TextField';
 
 type EventFormProps = {
   values: EventFormValues;
@@ -36,8 +36,7 @@ export function EventForm({
   return (
     <KeyboardAvoidingView
       style={styles.flex}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 88 : 0}>
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <ScrollView
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
@@ -117,6 +116,7 @@ const styles = StyleSheet.create({
   content: {
     padding: spacing.lg,
     paddingBottom: spacing.xxl,
+    // flexGrow: 1,
   },
   intro: {
     ...typography.body,
